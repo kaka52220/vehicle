@@ -1,0 +1,19 @@
+# Qt/CMake 编译构建目录
+build-*/
+*/build-*
+# 临时编译文件、缓存
+*.o
+*.obj
+*.a
+*.so
+*.dll
+*.exe
+*.log
+# Qt 自动生成
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+# 本地配置、缓存
+.DS_Store
+__pycache__/
+*.pyc
