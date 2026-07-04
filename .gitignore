@@ -17,3 +17,6 @@ qrc_*.cpp
 .DS_Store
 __pycache__/
 *.pyc
+
+#self
+*.gitignore
