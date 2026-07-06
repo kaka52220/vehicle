@@ -8,30 +8,30 @@
 //#include "iostream"
 // MQTT 客户端类（继承 mosquittopp）
 // =====================================================
-class MqttClient : public mosqpp::mosquittopp
-{
-public:
-    MqttClient(const char *id) : mosqpp::mosquittopp(id) {}
+//class MqttClient : public mosqpp::mosquittopp
+//{
+//public:
+//    MqttClient(const char *id) : mosqpp::mosquittopp(id) {}
 
-    void on_connect(int rc) override
-    {
-        if (rc == 0) {
-            qDebug() << "✅ MQTT 连接成功";
-        } else {
-            qDebug() << "❌ MQTT 连接失败，错误码:" << rc;
-        }
-    }
+//    void on_connect(int rc) override
+//    {
+//        if (rc == 0) {
+//            qDebug() << "✅ MQTT 连接成功";
+//        } else {
+//            qDebug() << "❌ MQTT 连接失败，错误码:" << rc;
+//        }
+//    }
 
-    void on_disconnect(int rc) override
-    {
-        qDebug() << "⚠️ MQTT 已断开连接";
-    }
+//    void on_disconnect(int rc) override
+//    {
+//        qDebug() << "⚠️ MQTT 已断开连接";
+//    }
 
-    void on_publish(int mid) override
-    {
-        qDebug() << "📤 消息已发布，mid:" << mid;
-    }
-};
+//    void on_publish(int mid) override
+//    {
+//        qDebug() << "📤 消息已发布，mid:" << mid;
+//    }
+//};
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
