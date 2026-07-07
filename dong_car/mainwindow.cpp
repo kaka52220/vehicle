@@ -142,7 +142,69 @@ void MainWindow::updateTime()
 
 void MainWindow::update1Time()
 {
+
     QString time = QDateTime::currentDateTime().toString("hh:mm:ss");
+    QString id = ui->lineEdit->text();
+
+    int type = 0;
+    if (ui->radioButton_vehicle->isChecked())
+        type = 1;
+    else if (ui->radioButton_UAV->isChecked())
+        type = 2;
+
+    QString latitude = ui->LinEdit_latitude->text();   // 注意控件名，请确认是否正确
+    QString longitude = ui->lineEdit_longitude->text(); // 改名为 longitude 更规范
+    QString euler = ui->lineEdit_euler->text();
+
+    QString laserstatus = ui->comboBox_laser->currentText();
+    QString Miwastatus = ui->comboBox_MiWa->currentText();
+    QString camerastatus = ui->comboBox_camera->currentText();
+    QString BeiDouststus = ui->comboBox_BeiDou->currentText();
+
+    int speed = ui->horizontalSlider->value();
+    int power = ui->progressBar_power->value();
+
+    int Alarmstatus = 0;
+    if (ui->checkBox_overspeed->isChecked()) Alarmstatus |= 1;   // bit0
+    if (ui->checkBox_diverge->isChecked())   Alarmstatus |= 2;   // bit1
+    if (ui->checkBox_lowpower->isChecked())  Alarmstatus |= 4;   // bit2
+
+    // 构造 JSON，注意占位符 %1~%13 与后面 .arg() 一一对应
+    QString payload = QString(
+        "{\"reportTime\":\"%1\","
+        "\"seriesNumber\":\"%2\","
+        "\"serviceType\":\"%3\","
+        "\"serviceData\": {"
+        "\"lidarStatus\":\"%4\","
+        "\"cameraStatus\":\"%5\","
+        "\"rtkStatus\":\"%6\","
+        "\"latitude\":\"%7\","
+        "\"longitude\":\"%8\","
+        "\"power\":%9,"
+        "\"alarmStatus\":%10}}"
+    )
+    .arg(time)                // %1
+    .arg(id)                  // %2
+    .arg(type)                // %3
+    .arg(laserstatus)         // %4
+    .arg(camerastatus)
+    .arg(BeiDouststus)
+    .arg(latitude)
+    .arg(longitude)
+    .arg(power)
+    .arg(Alarmstatus);
+      // 发布到话题 think/car/002
+      if (mqttClient->isConnected()) {
+          bool ok = mqttClient->publishMessage("think/car/002", payload, 0, false);
+          if (ok) {
+              ui->textEdit_log->append(QString("[%1] 已发布数据到 think/car/002").arg(time));
+          } else {
+              ui->textEdit_log->append(QString("[%1] 发布失败").arg(time));
+          }
+      } else {
+          ui->textEdit_log->append(QString("[%1] MQTT未连接，无法发布").arg(time));
+      }
+
     ui->textEdit_log->append(QString("[%1]suscced upload").arg(time));
 
     QString ID = ui->lineEdit->text();
@@ -163,10 +225,10 @@ void MainWindow::update1Time()
 // -------------------- 按钮槽函数 -----------------------
 void MainWindow::on_btn_connect_server_clicked()
 {
-   QString host = "10.134.2.113";
-    int port = 1884;
-//    QString host = "broker.emqx.io";
-//    int port = 1883;
+//   QString host = "10.134.2.113";
+//    int port = 1884;r
+   QString host = "broker.emqx.io";
+   int port = 1883;
     bool ok = mqttClient->connectToBroker(host, port);
     if (ok) {
         ui->textEdit_log->append(QString("[%1] 发起连接 MQTT %2:%3")
@@ -196,17 +258,6 @@ void MainWindow::on_btn_clear_log_clicked()
     ui->textEdit_log->clear();
 }
 
-void MainWindow::on_comboBox_4_activated(const QString &arg1)
-{
-    QString time = QDateTime::currentDateTime().toString("hh:mm:ss");
-    int idx = ui->comboBox_4->currentIndex();
-    if(idx == 0) {
-        ui->textEdit_log->append(QString("[%1]BeiDouposition : online").arg(time));
-    } else if(idx == 1) {
-        ui->textEdit_log->append(QString("[%1]BeiDouposition : Outline").arg(time));
-    }
-}
-
 void MainWindow::on_checkBox_3_stateChanged(int arg1)
 {
     QString time = QDateTime::currentDateTime().toString("hh:mm:ss");
@@ -222,4 +273,16 @@ void MainWindow::on_horizontalSlider_actionTriggered(int action)
     QString time = QDateTime::currentDateTime().toString("hh:mm:ss");
     int sliderVal = ui->horizontalSlider->value();
     ui->textEdit_log->append(QString("[%1]speed %2").arg(time).arg(sliderVal));
+}
+
+void MainWindow::on_comboBox_BeiDou_activated(const QString &arg1)
+{
+
+    QString time = QDateTime::currentDateTime().toString("hh:mm:ss");
+    int idx = ui->comboBox_BeiDou->currentIndex();
+    if(idx == 0) {
+      ui->textEdit_log->append(QString("[%1]BeiDouposition : online").arg(time));
+     } else if(idx == 1) {
+       ui->textEdit_log->append(QString("[%1]BeiDouposition : Outline").arg(time));
+   }
 }
