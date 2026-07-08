@@ -1,0 +1,23 @@
+<launch>
+  <!-- 启动 Gazebo 空世界 -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>
+
+  <!-- 加载机器人描述到参数服务器 -->
+  <param name="robot_description" command="$(find xacro)/xacro $(find my_robot_description)/urdf/diff_robot.xacro" />
+
+  <!-- 在 Gazebo 中生成机器人 -->
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"
+        args="-urdf -model diff_robot -param robot_description -x 0 -y 0 -z 0.1"
+        output="screen"/>
+
+  <!-- 可选：启动 RViz 方便观察（注释掉若不需要） -->
+  <!--
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find my_robot_description)/config/default.rviz" />
+  -->
+</launch>

@@ -75,8 +75,7 @@ void MqttClient::on_publish(int mid)
     emit messagePublished(mid);
 }
 // ------------------------------------------------------------
-// MainWindow 实现
-// ------------------------------------------------------------
+// MainWindow 实现// ------------------------------------------------------------
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -156,10 +155,15 @@ void MainWindow::update1Time()
     QString longitude = ui->lineEdit_longitude->text(); // 改名为 longitude 更规范
     QString euler = ui->lineEdit_euler->text();
 
-    QString laserstatus = ui->comboBox_laser->currentText();
-    QString Miwastatus = ui->comboBox_MiWa->currentText();
-    QString camerastatus = ui->comboBox_camera->currentText();
-    QString BeiDouststus = ui->comboBox_BeiDou->currentText();
+//    QString laserstatus = ui->comboBox_laser->currentText();
+//    QString Miwastatus = ui->comboBox_MiWa->currentText();
+//    QString camerastatus = ui->comboBox_camera->currentText();
+//    QString BeiDouststus = ui->comboBox_BeiDou->currentText();
+    int laserstatus = (ui->comboBox_laser->currentText() == "online") ? 1 : 0;
+    int miwaStatus = (ui->comboBox_MiWa->currentText() == "online") ? 1 : 0;
+    int camerastatus = (ui->comboBox_camera->currentText() == "online") ? 1 : 0;
+    int BeiDouststus = (ui->comboBox_BeiDou->currentText() == "online") ? 1 : 0;
+
 
     int speed = ui->horizontalSlider->value();
     int power = ui->progressBar_power->value();
@@ -174,30 +178,31 @@ void MainWindow::update1Time()
         "{\"reportTime\":\"%1\","
         "\"seriesNumber\":\"%2\","
         "\"serviceType\":\"%3\","
-        "\"serviceData\": {"
-        "\"lidarStatus\":\"%4\","
-        "\"cameraStatus\":\"%5\","
-        "\"rtkStatus\":\"%6\","
-        "\"latitude\":\"%7\","
-        "\"longitude\":\"%8\","
-        "\"power\":%9,"
-        "\"alarmStatus\":%10}}"
-    )
-    .arg(time)                // %1
-    .arg(id)                  // %2
-    .arg(type)                // %3
-    .arg(laserstatus)         // %4
-    .arg(camerastatus)
-    .arg(BeiDouststus)
-    .arg(latitude)
-    .arg(longitude)
-    .arg(power)
-    .arg(Alarmstatus);
+        "\"serviceData\":{"
+        "\"lidarStatus\":%4,"
+        "\"cameraStatus\":%5,"
+        "\"rtkStatus\":%6,"
+        "\"latitude\":%7,"
+        "\"longitude\":%8,"
+        "\"speed\":%9,"
+        "\"power\":%10,"
+        "\"alarmStatus\":%11}}"
+    ).arg(time)
+            .arg(id)
+            .arg(type)
+            .arg(laserstatus)
+            .arg(camerastatus)
+            .arg(BeiDouststus)
+            .arg(latitude)
+            .arg(longitude)
+            .arg(speed)
+            .arg(power)
+            .arg(Alarmstatus);
       // 发布到话题 think/car/002
       if (mqttClient->isConnected()) {
-          bool ok = mqttClient->publishMessage("think/car/002", payload, 0, false);
+          bool ok = mqttClient->publishMessage("/thing/car/20230303002", payload, 0, false);
           if (ok) {
-              ui->textEdit_log->append(QString("[%1] 已发布数据到 think/car/002").arg(time));
+              ui->textEdit_log->append(QString("[%1] 已发布数据到 /thing/car/20230303002").arg(time));
           } else {
               ui->textEdit_log->append(QString("[%1] 发布失败").arg(time));
           }
@@ -258,7 +263,7 @@ void MainWindow::on_btn_clear_log_clicked()
     ui->textEdit_log->clear();
 }
 
-void MainWindow::on_checkBox_3_stateChanged(int arg1)
+void MainWindow::on_checkBox_lowpower_stateChanged(int arg1)
 {
     QString time = QDateTime::currentDateTime().toString("hh:mm:ss");
     if (arg1 == Qt::Checked) {

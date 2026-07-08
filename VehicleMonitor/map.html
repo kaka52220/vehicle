@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>高德地图监控</title>
+    <style>
+        html, body { margin:0; padding:0; width:100%; height:100%; }
+        #map { width:100%; height:100%; }
+    </style>
+    <!-- 引入高德地图 JS API 2.0（请替换 YOUR_AMAP_KEY 为您自己的 key） -->
+    <script src="https://webapi.amap.com/maps?v=2.0&key=a3c14aa908cb1131748fd2f213707cf2"></script>
+    <!-- 引入坐标转换库 (WGS84 -> GCJ-02) -->
+    <script src="https://cdn.jsdelivr.net/npm/coordtransform@2.1.2/index.min.js"></script>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        var map = new AMap.Map('map', {
+            zoom: 15,
+            center: [114.53435053, 30.39655027],  // 初始中心点（经度, 纬度）但注意高德是 GCJ-02
+            mapStyle: 'amap://styles/whitesmoke', // 可换为卫星图，见下文
+            viewMode: '2D'
+        });
+
+        // 由于高德地图使用 GCJ-02，我们需要将初始中心点也转换
+        // 但我们直接传入 WGS84，高德 API 是否自动支持？实际上高德默认接受 GCJ-02。
+        // 所以我们先转换中心点：
+        var centerWgs = [30.39655027, 114.53435053]; // 纬度, 经度
+        var centerGcj = coordtransform.wgs84togcj02(centerWgs[0], centerWgs[1]);
+        map.setCenter([centerGcj[1], centerGcj[0]]); // 设置中心
+
+        // 存储车辆标记 { vehicleId: marker }
+        var markers = {};
+
+        // 暴露给 C++ 调用的函数（经纬度输入为 WGS84）
+        function updateVehiclePosition(id, lat, lng) {
+            // 1. WGS84 -> GCJ-02
+            var gcj = coordtransform.wgs84togcj02(lat, lng);
+            var gcjLng = gcj[1];
+            var gcjLat = gcj[0];
+            var position = [gcjLng, gcjLat];
+
+            if (markers[id]) {
+                // 更新位置
+                markers[id].setPosition(position);
+            } else {
+                // 创建自定义图标（使用高德简易 Marker）
+                var marker = new AMap.Marker({
+                    position: position,
+                    title: id,
+                    label: {
+                        content: id,
+                        offset: new AMap.Pixel(0, -10)
+                    },
+                    icon: new AMap.Icon({
+                        size: new AMap.Size(24, 24),
+                        image: 'https://webapi.amap.com/theme/v1.3/markers/b/mark_bs.png', // 默认图标
+                        imageSize: new AMap.Size(24, 24)
+                    })
+                });
+                map.add(marker);
+                markers[id] = marker;
+            }
+        }
+
+        function removeVehicle(id) {
+            if (markers[id]) {
+                map.remove(markers[id]);
+                delete markers[id];
+            }
+        }
+
+        function clearAllVehicles() {
+            for (var id in markers) {
+                map.remove(markers[id]);
+            }
+            markers = {};
+        }
+    </script>
+</body>
+</html>

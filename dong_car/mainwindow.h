@@ -7,7 +7,6 @@
 #include <QTextEdit>
 #include <QObject>
 #include <mosquittopp.h>
-
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -63,7 +62,7 @@ private slots:
     void on_btn_connect_server_clicked();
     void on_btn_push_data_clicked();
     void on_btn_clear_log_clicked();
-    void on_checkBox_3_stateChanged(int arg1);
+    void on_checkBox_lowpower_stateChanged(int arg1);
     void on_horizontalSlider_actionTriggered(int action);
 
     void on_comboBox_BeiDou_activated(const QString &arg1);
